@@ -14,7 +14,8 @@ public class AppUserMapper {
         return new AppUserDTO(
                 appUser.getId(),
                 appUser.getName(),
-                appUser.getEmail()
+                appUser.getEmail(),
+                appUser.getRole()
         );
     }
 
@@ -25,6 +26,6 @@ public class AppUserMapper {
             return null;
         }
 
-        return new AppUser(appUserDTO.id() ,appUserDTO.name(), appUserDTO.email() );
+        return new AppUser(appUserDTO.id() ,appUserDTO.name(), appUserDTO.email(), appUserDTO.role );
     }
 }

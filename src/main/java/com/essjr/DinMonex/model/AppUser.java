@@ -37,6 +37,12 @@ public class AppUser implements UserDetails {
     public AppUser() {
     }
 
+    public AppUser(Long id, String name, String email, AppUserRole role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+    }
     public AppUser(Long id, String name, String email, String password, AppUserRole role) {
         this.id = id;
         this.name = name;
