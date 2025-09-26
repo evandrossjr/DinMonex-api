@@ -1,11 +1,15 @@
 package com.essjr.DinMonex.services;
 
 
+import com.essjr.DinMonex.config.JwtService;
 import com.essjr.DinMonex.dtos.AppUserRegistrationDTO;
+import com.essjr.DinMonex.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.dtos.RegisterRequestDTO;
 import com.essjr.DinMonex.model.AppUser;
 import com.essjr.DinMonex.model.enuns.AppUserRole;
 import com.essjr.DinMonex.repositories.AppUserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +17,16 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final AppUserRepository appUserRepository;
-
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
 
-    public AuthService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
 
@@ -37,6 +44,28 @@ public class AuthService {
 
         appUserRepository.save(newUser);
 
+    }
+
+    /**
+     * Autentica um utilizador e, se as credenciais forem válidas, gera um token JWT.
+     * @param loginRequestDTO DTO contendo e-mail e senha.
+     * @return Uma string contendo o token JWT.
+     */
+    public String login(LoginRequestDTO loginRequestDTO) {
+        // O AuthenticationManager usa o JpaUserDetailsService e o PasswordEncoder
+        // para validar as credenciais. Se forem inválidas, ele lança uma AuthenticationException.
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequestDTO.getEmail(),
+                        loginRequestDTO.getPassword()
+                )
+        );
+
+        // Se a autenticação for bem-sucedida, buscamos o utilizador e geramos o token.
+        var user = appUserRepository.findByEmail(loginRequestDTO.getEmail())
+                .orElseThrow(() -> new IllegalStateException("Utilizador não encontrado após autenticação bem-sucedida."));
+
+        return jwtService.generateToken(user);
     }
 
 }

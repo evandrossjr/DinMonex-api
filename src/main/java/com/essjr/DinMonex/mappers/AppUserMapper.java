@@ -26,6 +26,6 @@ public class AppUserMapper {
             return null;
         }
 
-        return new AppUser(appUserDTO.id() ,appUserDTO.name(), appUserDTO.email(), appUserDTO.role );
+        return new AppUser(appUserDTO.id() ,appUserDTO.name(), appUserDTO.email(), appUserDTO.role() );
     }
 }
