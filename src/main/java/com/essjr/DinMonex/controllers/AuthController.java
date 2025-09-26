@@ -1,6 +1,7 @@
 package com.essjr.DinMonex.controllers;
 
 
+import com.essjr.DinMonex.dtos.ApiResponseDTO;
 import com.essjr.DinMonex.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.dtos.LoginResponseDTO;
 import com.essjr.DinMonex.dtos.RegisterRequestDTO;
@@ -31,9 +32,10 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDTO dto){
         try {
             authService.registerUser(dto, AppUserRole.REGULAR);
-            return ResponseEntity.ok("Usuário cadastrado com sucesso!");
+            return ResponseEntity.ok(new ApiResponseDTO("Usuário cadastrado com sucesso!"));
         } catch (IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());        }
+            return ResponseEntity.badRequest().body(new ApiResponseDTO(e.getMessage()));
+        }
     }
 
     /**
@@ -50,7 +52,7 @@ public class AuthController {
         } catch (AuthenticationException e) {
             // Se o AuthenticationManager lançar uma exceção (credenciais erradas),
             // retornamos um erro 401 Unauthorized.
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseDTO("E-mail ou senha inválidos."));
         }
     }
 
