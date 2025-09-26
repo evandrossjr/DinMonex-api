@@ -14,6 +14,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 
 /**
@@ -43,6 +51,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 2. Adicione esta linha para habilitar a configuração de CORS global.
+                // Ela irá usar o Bean 'corsConfigurationSource' que definimos abaixo.
+                .cors(withDefaults())
                 // 1. Desabilita a proteção CSRF. Isto é comum para APIs REST stateless
                 // que não usam sessões baseadas em cookies.
                 .csrf(csrf -> csrf.disable())
@@ -71,6 +82,29 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    //  Adicione este novo Bean para definir as regras de CORS.
+    /**
+     * @Bean Este Bean define a configuração de CORS (Cross-Origin Resource Sharing)
+     * para toda a aplicação. É aqui que dizemos ao nosso backend para aceitar
+     * pedidos do nosso frontend em desenvolvimento.
+     * @return A fonte de configuração de CORS.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Permite que o nosso frontend (a correr em localhost:4200) faça pedidos.
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        // Permite os métodos HTTP mais comuns.
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Permite os cabeçalhos mais comuns, incluindo o 'Authorization' para o nosso token JWT.
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplica esta configuração a todos os caminhos (/**) da nossa API.
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     /**
