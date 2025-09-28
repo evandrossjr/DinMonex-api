@@ -35,7 +35,7 @@ public class TransactionService {
 
         // 2. Chama o método do repositório que já filtra por utilizador, garantindo o isolamento.
         return transactions.stream()
-                .map(this::convertToTesponseDTO)
+                .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
