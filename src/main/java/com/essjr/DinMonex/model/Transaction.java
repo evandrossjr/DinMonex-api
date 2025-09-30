@@ -1,6 +1,7 @@
 package com.essjr.DinMonex.model;
 
 
+import com.essjr.DinMonex.model.enuns.TransactionType;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -18,10 +19,17 @@ public class Transaction {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal amount;
+    private BigDecimal value;
 
     @Column(nullable = false)
-    private LocalDate date;
+    private LocalDate dueDate;
+
+    @Column(nullable = false)
+    private boolean isRecurring;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
 
     /**
      * A LIGAÇÃO CRUCIAL PARA A SEGURANÇA:
@@ -32,6 +40,19 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_user-id", nullable = false)
     private AppUser appUser;
+
+    public Transaction() {
+    }
+
+    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser) {
+        this.id = id;
+        this.description = description;
+        this.value = value;
+        this.dueDate = dueDate;
+        this.isRecurring = isRecurring;
+        this.type = type;
+        this.appUser = appUser;
+    }
 
     public Long getId() {
         return id;
@@ -49,20 +70,36 @@ public class Transaction {
         this.description = description;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getValue() {
+        return value;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setValue(BigDecimal value) {
+        this.value = value;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public boolean isRecurring() {
+        return isRecurring;
+    }
+
+    public void setRecurring(boolean recurring) {
+        isRecurring = recurring;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
     }
 
     public AppUser getAppUser() {

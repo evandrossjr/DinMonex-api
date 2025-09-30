@@ -50,8 +50,9 @@ public class TransactionService {
         // Converte o DTO para uma Entidade antes de salvar.
         Transaction newTransaction = new Transaction();
         newTransaction.setDescription(dto.getDescription());
-        newTransaction.setAmount(dto.getAmount());
-        newTransaction.setDate(dto.getDate());
+        newTransaction.setValue(dto.getAmount());
+        newTransaction.setDueDate(dto.getDate());
+
         newTransaction.setAppUser(currentUser); // Associa ao utilizador logado.
 
         Transaction savedTransaction = transactionRepository.save(newTransaction);
@@ -91,8 +92,8 @@ public class TransactionService {
         TransactionResponseDTO dto = new TransactionResponseDTO();
         dto.setId(transaction.getId());
         dto.setDescription(transaction.getDescription());
-        dto.setAmount(transaction.getAmount());
-        dto.setDate(transaction.getDate());
+        dto.setAmount(transaction.getValue());
+        dto.setDate(transaction.getDueDate());
         return dto;
     }
 
