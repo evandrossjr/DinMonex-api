@@ -1,11 +1,11 @@
 package com.essjr.DinMonex.services;
 
-import com.essjr.DinMonex.config.JwtService;
-import com.essjr.DinMonex.dtos.LoginRequestDTO;
-import com.essjr.DinMonex.dtos.RegisterRequestDTO;
-import com.essjr.DinMonex.model.AppUser;
-import com.essjr.DinMonex.model.enuns.AppUserRole;
-import com.essjr.DinMonex.repositories.AppUserRepository;
+import com.essjr.DinMonex.auth.AuthService;
+import com.essjr.DinMonex.security.JwtService;
+import com.essjr.DinMonex.auth.dtos.LoginRequestDTO;
+import com.essjr.DinMonex.auth.dtos.RegisterRequestDTO;
+import com.essjr.DinMonex.user.AppUser;
+import com.essjr.DinMonex.user.AppUserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ class AuthServiceTest {
         // Arrange
         final String rawPassword = "password123";
         final String encodedPassword = "encodedPassword123";
-        final AppUserRole role = AppUserRole.REGULAR;
+        final AppUser.AppUserRole role = AppUser.AppUserRole.REGULAR;
         RegisterRequestDTO request = new RegisterRequestDTO("New User", "new@user.com", rawPassword);
 
         // Simula que o email ainda não existe no banco
@@ -89,7 +89,7 @@ class AuthServiceTest {
 
         // Act & Assert
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            authService.registerUser(request, AppUserRole.REGULAR);
+            authService.registerUser(request, AppUser.AppUserRole.REGULAR);
         });
 
         assertEquals("Email já cadastrado.", exception.getMessage());
@@ -103,7 +103,7 @@ class AuthServiceTest {
     void login_ShouldReturnJwtToken_WhenCredentialsAreValid() {
         // Arrange
         LoginRequestDTO request = new LoginRequestDTO("test@user.com", "password");
-        AppUser existingUser = new AppUser(1L, "Test User", "test@user.com", "encodedPass", AppUserRole.REGULAR);
+        AppUser existingUser = new AppUser(1L, "Test User", "test@user.com", "encodedPass", AppUser.AppUserRole.REGULAR);
         String expectedToken = "mocked-jwt-token-string";
 
         // Mocks
