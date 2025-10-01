@@ -6,6 +6,7 @@ import com.essjr.DinMonex.auth.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.auth.dtos.LoginResponseDTO;
 import com.essjr.DinMonex.auth.dtos.RegisterRequestDTO;
 import com.essjr.DinMonex.user.AppUser;
+import com.essjr.DinMonex.user.enums.AppUserRole;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDTO dto){
         try {
-            authService.registerUser(dto, AppUser.AppUserRole.REGULAR);
+            authService.registerUser(dto, AppUserRole.REGULAR);
             return ResponseEntity.ok(new ApiResponseDTO("Usuário cadastrado com sucesso!"));
         } catch (IllegalStateException e){
             return ResponseEntity.badRequest().body(new ApiResponseDTO(e.getMessage()));

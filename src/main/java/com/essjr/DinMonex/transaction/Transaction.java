@@ -19,17 +19,17 @@ public class Transaction {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "transaction_value", precision = 38, scale = 2, nullable = false)
     private BigDecimal value;
 
-    @Column(nullable = false)
+    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
-    @Column(nullable = false)
+    @Column(name = "is_recurring", nullable = false)
     private boolean isRecurring;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TransactionType type;
 
     /**
@@ -39,7 +39,7 @@ public class Transaction {
      * FetchType.LAZY é uma otimização de performance.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "app_user-id", nullable = false)
+    @JoinColumn(name = "app_user_id", nullable = false)
     private AppUser appUser;
 
     public Transaction() {
