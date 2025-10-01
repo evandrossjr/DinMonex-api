@@ -24,7 +24,6 @@ import java.util.Arrays;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 
-
 /**
  * @Configuration indica que esta é uma classe de configuração do Spring.
  * @EnableWebSecurity ativa a configuração de segurança web do Spring Security.
@@ -58,13 +57,14 @@ public class SecurityConfig {
                 // 1. Desabilita a proteção CSRF. Isto é comum para APIs REST stateless
                 // que não usam sessões baseadas em cookies.
                 .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
 
                 // 2. Define as regras de autorização para os pedidos HTTP.
                 .authorizeHttpRequests(auth -> auth
                         // Permite que qualquer pessoa (mesmo sem autenticação) aceda aos endpoints
                         // que começam com /api/auth/ (ex: /login, /register).
-                        .requestMatchers("/api/auth/**").permitAll()
-
+                        .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/transactions/**").hasAnyRole("REGULAR","ADMIN")
                         // Exige que todos os outros pedidos na aplicação sejam autenticados.
                         .anyRequest().authenticated()
                 )

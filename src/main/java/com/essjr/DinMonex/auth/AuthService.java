@@ -6,6 +6,7 @@ import com.essjr.DinMonex.auth.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.auth.dtos.RegisterRequestDTO;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
+import com.essjr.DinMonex.user.enums.AppUserRole;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +30,7 @@ public class AuthService {
 
 
 
-    public void registerUser(RegisterRequestDTO dto, AppUser.AppUserRole role) {
+    public void registerUser(RegisterRequestDTO dto, AppUserRole role) {
         if (appUserRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalStateException("Email já cadastrado.");
         }
