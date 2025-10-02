@@ -27,7 +27,6 @@ public class Transaction {
 
     @Column(name = "is_recurring", nullable = false)
     private boolean isRecurring;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
