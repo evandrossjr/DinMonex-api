@@ -1,5 +1,7 @@
 package com.essjr.DinMonex.transaction.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,6 +13,11 @@ public class TransactionRequestDTO {
     private String description;
     private BigDecimal value;
     private LocalDate dueDate;
+
+    //A anotação @JsonProperty("isRecurring") diz ao Jackson
+    // para procurar explicitamente por um campo chamado "isRecurring" no JSON
+    // e mapeá-lo para este campo Java.
+    @JsonProperty("isRecurring")
     private boolean isRecurring;
 
     // Getters e Setters
