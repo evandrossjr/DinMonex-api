@@ -3,6 +3,7 @@ package com.essjr.DinMonex.services;
 import com.essjr.DinMonex.auth.JpaUserDetailsService;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
+import com.essjr.DinMonex.user.enums.AppUserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class JpaUserDetailsServiceTest { // <-- MUDANÇA DE NOME AQUI
 
     @BeforeEach
     void setUp() {
-        testUser = new AppUser(1L, "Test User", userEmail, "password123", AppUser.AppUserRole.REGULAR);
+        testUser = new AppUser(1L, "Test User", userEmail, "password123", AppUserRole.REGULAR);
     }
 
     @Test
