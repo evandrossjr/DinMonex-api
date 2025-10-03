@@ -2,6 +2,7 @@ package com.essjr.DinMonex.repositories;
 
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
+import com.essjr.DinMonex.user.enums.AppUserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ class AppUserRepositoryTest {
         appUser.setName("Utilizador Teste");
         appUser.setEmail("teste@email.com");
         appUser.setPassword("hash123");
-        appUser.setRole(AppUser.AppUserRole.REGULAR);
+        appUser.setRole(AppUserRole.REGULAR);
     }
 
     @Test

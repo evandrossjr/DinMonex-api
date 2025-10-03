@@ -6,6 +6,7 @@ import com.essjr.DinMonex.auth.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.auth.dtos.RegisterRequestDTO;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
+import com.essjr.DinMonex.user.enums.AppUserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,7 @@ class AuthServiceTest {
         // Arrange
         final String rawPassword = "password123";
         final String encodedPassword = "encodedPassword123";
-        final AppUser.AppUserRole role = AppUser.AppUserRole.REGULAR;
+        final AppUserRole role = AppUserRole.REGULAR;
         RegisterRequestDTO request = new RegisterRequestDTO("New User", "new@user.com", rawPassword);
 
         // Simula que o email ainda não existe no banco
@@ -89,7 +90,7 @@ class AuthServiceTest {
 
         // Act & Assert
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            authService.registerUser(request, AppUser.AppUserRole.REGULAR);
+            authService.registerUser(request, AppUserRole.REGULAR);
         });
 
         assertEquals("Email já cadastrado.", exception.getMessage());
@@ -103,7 +104,7 @@ class AuthServiceTest {
     void login_ShouldReturnJwtToken_WhenCredentialsAreValid() {
         // Arrange
         LoginRequestDTO request = new LoginRequestDTO("test@user.com", "password");
-        AppUser existingUser = new AppUser(1L, "Test User", "test@user.com", "encodedPass", AppUser.AppUserRole.REGULAR);
+        AppUser existingUser = new AppUser(1L, "Test User", "test@user.com", "encodedPass", AppUserRole.REGULAR);
         String expectedToken = "mocked-jwt-token-string";
 
         // Mocks
