@@ -17,7 +17,7 @@ public class Installment {
     @Column(nullable = false)
     private int installmentNumber;
 
-    @Column(nullable = false)
+    @Column(name = "installment_value", nullable = false)
     private BigDecimal value;
 
     @Column(nullable = false)
