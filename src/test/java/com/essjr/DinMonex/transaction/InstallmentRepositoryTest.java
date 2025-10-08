@@ -41,7 +41,7 @@ class InstallmentRepositoryTest {
         registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgresqlContainer::getUsername);
         registry.add("spring.datasource.password", postgresqlContainer::getPassword);
-        // A SOLUÇÃO: Força o Spring a usar o driver do PostgreSQL para este teste.
+        // Força o Spring a usar o driver do PostgreSQL para este teste.
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
     }
 

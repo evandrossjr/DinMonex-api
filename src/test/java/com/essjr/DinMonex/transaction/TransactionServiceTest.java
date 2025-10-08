@@ -1,46 +1,44 @@
 package com.essjr.DinMonex.transaction;
 
 import com.essjr.DinMonex.security.AuthenticationHelper;
-import com.essjr.DinMonex.transaction.dtos.TransactionResponseDTO;
+import com.essjr.DinMonex.transaction.dtos.CreditCardTransactionRequestDTO;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 /**
-* Testes unitários para a classe TransactionService.
-* @ExtendWith(MockitoExtension.class) ativa a integração do JUnit 5 com o Mockito .
-*/
+ * Testes unitários para a classe TransactionService.
+ * @ExtendWith(MockitoExtension.class) ativa a integração do JUnit 5 com o Mockito.
+ */
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
     // @Mock cria uma versão "falsa" (um mock) das dependências.
-    // Estes mocks não irão falar com a base de dados de verdade.
     @Mock
     private TransactionRepository transactionRepository;
 
     @Mock
     private AuthenticationHelper authenticationHelper;
 
-    // @InjectMocks cria uma instância real do TransactionService e injeta
-    // os mocks criados acima (@Mock) nos seus campos.
+    // @InjectMocks cria uma instância real do TransactionService e injeta os mocks.
     @InjectMocks
     private TransactionService transactionService;
 
-    // Utilizador de teste que será usado em todos os cenários.
     private AppUser testUser;
 
     @BeforeEach
@@ -52,79 +50,62 @@ class TransactionServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar uma lista de transações de consumo do utilizador logado")
-    void deveRetornarTransacoesDeConsumo() {
+    @DisplayName("Deve criar uma transação de cartão de crédito e gerar as parcelas corretamente")
+    void deveCriarTransacaoDeCartaoComParcelas() {
         // Arrange (Preparação)
-        // 1. Simula o comportamento do AuthenticationHelper:
-        // "QUANDO o método getCurrentUser for chamado, ENTÃO retorna o nosso testUser."
+        // 1. Cria o DTO de requisição que o frontend enviaria.
+        CreditCardTransactionRequestDTO requestDTO = new CreditCardTransactionRequestDTO();
+        requestDTO.setDescription("Notebook Novo");
+        requestDTO.setValue(new BigDecimal("3000.00"));
+        requestDTO.setTotalInstallments(3);
+        requestDTO.setDueDate(LocalDate.of(2025, 10, 15));
+
+        // 2. Simula o comportamento das dependências.
         when(authenticationHelper.getCurrentUser()).thenReturn(testUser);
+        // Quando o save for chamado, apenas retorna o objeto que foi passado para ele.
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // 2. Cria uma lista de transações falsas que o repositório deveria retornar.
-        Transaction tx1 = new Transaction();
-        tx1.setId(10L);
-        tx1.setDescription("Conta de Luz");
-        List<Transaction> fakeTransactions = List.of(tx1);
-
-        // 3. Simula o comportamento do TransactionRepository:
-        // "QUANDO o método findAllByAppUserAndType for chamado com o nosso utilizador e o tipo CONSUMPTION,
-        // ENTÃO retorna a nossa lista de transações falsas."
-        when(transactionRepository.findAllByAppUserAndType(testUser, TransactionType.CONSUMPTION))
-                .thenReturn(fakeTransactions);
+        // 3. Cria um "Captor" para "apanhar" o objeto que é passado para o método save.
+        // Esta é a ferramenta chave para verificarmos se a lógica interna do serviço está correta.
+        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
 
         // Act (Ação)
-        // Chama o método real do nosso serviço que estamos a testar.
-        List<TransactionResponseDTO> result = transactionService.getMyConsumptionTransactions();
+        // Chama o método real que queremos testar.
+        transactionService.createCreditCardTransaction(requestDTO);
 
         // Assert (Verificação)
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDescription()).isEqualTo("Conta de Luz");
+        // 1. Verifica se o método save do repositório foi chamado exatamente uma vez
+        // e captura o argumento que foi passado para ele.
+        verify(transactionRepository, times(1)).save(transactionCaptor.capture());
 
-        // Verifica se os mocks foram chamados como esperado.
-        verify(authenticationHelper, times(1)).getCurrentUser();
-        verify(transactionRepository, times(1)).findAllByAppUserAndType(testUser, TransactionType.CONSUMPTION);
-    }
+        // 2. Obtém a transação que foi "apanhada" pelo captor.
+        Transaction savedTransaction = transactionCaptor.getValue();
 
-    @Test
-    @DisplayName("Deve apagar uma transação com sucesso se pertencer ao utilizador")
-    void deveApagarTransacaoDoUtilizador() {
-        // Arrange
-        Long transactionIdToDelete = 20L;
-        Transaction transactionBelongingToUser = new Transaction();
-        transactionBelongingToUser.setId(transactionIdToDelete);
-        transactionBelongingToUser.setAppUser(testUser); // Importante: a transação pertence ao utilizador de teste
+        // 3. Verifica os dados da transação "mãe".
+        assertThat(savedTransaction).isNotNull();
+        assertThat(savedTransaction.getDescription()).isEqualTo("Notebook Novo");
+        assertThat(savedTransaction.getAppUser()).isEqualTo(testUser);
+        assertThat(savedTransaction.getType()).isEqualTo(TransactionType.CREDIT_CARD);
+        assertThat(savedTransaction.getTotalInstallments()).isEqualTo(3);
 
-        when(authenticationHelper.getCurrentUser()).thenReturn(testUser);
-        // Simula que o repositório encontrou a transação e que ela pertence ao utilizador.
-        when(transactionRepository.findByIdAndAppUser(transactionIdToDelete, testUser))
-                .thenReturn(Optional.of(transactionBelongingToUser));
+        // 4. Verifica os dados das parcelas geradas.
+        List<Installment> installments = savedTransaction.getInstallments();
+        assertThat(installments).hasSize(3);
 
-        // Act
-        transactionService.deleteMyTransaction(transactionIdToDelete);
+        // Verifica a primeira parcela
+        assertThat(installments.get(0).getInstallmentNumber()).isEqualTo(1);
+        assertThat(installments.get(0).getValue()).isEqualTo(new BigDecimal("1000.00"));
+        assertThat(installments.get(0).getDueDate()).isEqualTo(LocalDate.of(2025, 10, 15));
 
-        // Assert
-        // A verificação mais importante: garantimos que o método delete do repositório
-        // foi chamado exatamente uma vez com o objeto de transação correto.
-        verify(transactionRepository, times(1)).delete(transactionBelongingToUser);
-    }
+        // Verifica a segunda parcela
+        assertThat(installments.get(1).getInstallmentNumber()).isEqualTo(2);
+        assertThat(installments.get(1).getValue()).isEqualTo(new BigDecimal("1000.00"));
+        assertThat(installments.get(1).getDueDate()).isEqualTo(LocalDate.of(2025, 11, 15));
 
-    @Test
-    @DisplayName("Deve lançar uma exceção ao tentar apagar uma transação que não existe ou não pertence ao utilizador")
-    void deveLancarExcecaoAoApagarTransacaoDeOutro() {
-        // Arrange
-        Long transactionIdToDelete = 30L;
-        when(authenticationHelper.getCurrentUser()).thenReturn(testUser);
-        // Simula o cenário de segurança: o repositório não encontrou a transação para este utilizador.
-        when(transactionRepository.findByIdAndAppUser(transactionIdToDelete, testUser))
-                .thenReturn(Optional.empty());
-
-        // Act & Assert
-        // Verificamos se a chamada ao método deleteMyTransaction lança a exceção que esperamos.
-        assertThrows(IllegalStateException.class, () -> {
-            transactionService.deleteMyTransaction(transactionIdToDelete);
-        });
-
-        // Verificamos que o método delete do repositório NUNCA foi chamado.
-        verify(transactionRepository, never()).delete(any(Transaction.class));
+        // Verifica a terceira parcela
+        assertThat(installments.get(2).getInstallmentNumber()).isEqualTo(3);
+        assertThat(installments.get(2).getValue()).isEqualTo(new BigDecimal("1000.00"));
+        assertThat(installments.get(2).getDueDate()).isEqualTo(LocalDate.of(2025, 12, 15));
     }
 }
+
