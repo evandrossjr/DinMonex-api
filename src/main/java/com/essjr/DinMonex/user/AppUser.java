@@ -28,7 +28,6 @@ public class AppUser implements UserDetails {
     private String password;
 
 
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AppUserRole role;

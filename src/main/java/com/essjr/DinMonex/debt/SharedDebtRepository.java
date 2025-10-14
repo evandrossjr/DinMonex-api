@@ -3,9 +3,11 @@ package com.essjr.DinMonex.debt;
 import com.essjr.DinMonex.debt.enums.SharedDebtStatus;
 import com.essjr.DinMonex.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface SharedDebtRepository extends JpaRepository<SharedDebt, Long> {
     /**
      * Encontra todas as dívidas partilhadas onde o utilizador fornecido é o CRIADOR.
