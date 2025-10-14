@@ -36,7 +36,7 @@ public class DebtController {
     }
 
     /**
-     * NOVO ENDPOINT: Obtém a lista de convites de dívida pendentes para o utilizador logado.
+     * Obtém a lista de convites de dívida pendentes para o utilizador logado.
      * Mapeado para GET /api/debts/invitations/pending
      */
     @GetMapping("/invitations/pending")
@@ -46,7 +46,7 @@ public class DebtController {
     }
 
     /**
-     * NOVO ENDPOINT: Permite que o utilizador convidado aceite um convite.
+     * Permite que o utilizador convidado aceite um convite.
      * Mapeado para POST /api/debts/invitations/{id}/accept
      * @param id O ID do convite de dívida a ser aceite.
      */
@@ -62,7 +62,7 @@ public class DebtController {
     }
 
     /**
-     * NOVO ENDPOINT: Permite que o utilizador convidado recuse um convite.
+     * Permite que o utilizador convidado recuse um convite.
      * Mapeado para POST /api/debts/invitations/{id}/reject
      * @param id O ID do convite de dívida a ser recusado.
      */
@@ -74,6 +74,24 @@ public class DebtController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponseDTO(e.getMessage()));
         }
+    }
+
+    /**
+     * Obtém a lista de dívidas que o utilizador logado CRIOU.
+     * Mapeado para GET /api/debts/created-by-me
+     */
+    @GetMapping("/created-by-me")
+    public ResponseEntity<List<SharedDebtResponseDTO>> getMyCreatedDebts() {
+        return ResponseEntity.ok(debtService.getMyCreatedDebts());
+    }
+
+    /**
+     * Obtém a lista de dívidas que foram partilhadas com o utilizador logado e que ele ACEITOU.
+     * Mapeado para GET /api/debts/shared-with-me
+     */
+    @GetMapping("/shared-with-me")
+    public ResponseEntity<List<SharedDebtResponseDTO>> getDebtsSharedWithMe() {
+        return ResponseEntity.ok(debtService.getDebtsSharedWithMe());
     }
 }
 

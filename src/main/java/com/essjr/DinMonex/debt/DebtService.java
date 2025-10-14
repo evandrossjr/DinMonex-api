@@ -58,7 +58,7 @@ public class DebtService {
     public List<SharedDebtResponseDTO> getMyPendingInvitations() {
         AppUser currentUser = authenticationHelper.getCurrentUser();
         List<SharedDebt> pendingDebts = sharedDebtRepository.findByInvitedUserAndStatus(currentUser, SharedDebtStatus.PENDING);
-
+ 
         return pendingDebts.stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
@@ -100,6 +100,32 @@ public class DebtService {
         SharedDebt updatedDebt = sharedDebtRepository.save(debt);
 
         return convertToResponseDTO(updatedDebt);
+    }
+
+    /**
+     * Obtém todas as dívidas que o utilizador logado CRIOU.
+     * @return Uma lista de DTOs com os detalhes das dívidas criadas.
+     */
+    @Transactional(readOnly = true)
+    public List<SharedDebtResponseDTO> getMyCreatedDebts() {
+        AppUser currentUser = authenticationHelper.getCurrentUser();
+        List<SharedDebt> createdDebts = sharedDebtRepository.findAllByCreatedBy(currentUser);
+        return createdDebts.stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtém todas as dívidas que foram enviadas para o utilizador logado e que ele ACEITOU.
+     * @return Uma lista de DTOs com os detalhes das dívidas aceites.
+     */
+    @Transactional(readOnly = true)
+    public List<SharedDebtResponseDTO> getDebtsSharedWithMe() {
+        AppUser currentUser = authenticationHelper.getCurrentUser();
+        List<SharedDebt> acceptedDebts = sharedDebtRepository.findByInvitedUserAndStatus(currentUser, SharedDebtStatus.ACCEPTED);
+        return acceptedDebts.stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
     }
 
 
