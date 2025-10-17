@@ -40,6 +40,15 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>io.awspring.cloud</groupId>
+				<artifactId>spring-cloud-aws-dependencies</artifactId>
+				<version>3.0.2</version> <!-- ou a mais recente -->
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -140,6 +149,11 @@
 			<artifactId>junit-jupiter</artifactId>
 			<version>1.21.3</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-aws-starter-ses</artifactId>
 		</dependency>
 
 	</dependencies>
