@@ -1,0 +1,91 @@
+
+# Arquivo: azure-pipelines.yml (Versão Final com CI + CD)
+
+trigger:
+  - main, develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  # ======================================================================
+  # ESTÁGIO 1: BUILD (CI - Integração Contínua)
+  # Este estágio compila, testa e publica os artefactos.
+  # ======================================================================
+  - stage: Build
+    displayName: 'Build and Test Stage'
+    jobs:
+      - job: Build
+        displayName: 'Build, test, and publish artifacts'
+        steps:
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'Temurin'
+
+          - task: Maven@4
+            displayName: 'Build with Maven'
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'clean package'
+              publishJUnitTestResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              cache: 'maven'
+
+          - task: CopyFiles@2
+            displayName: 'Copy Files to Artifact Staging Directory'
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)'
+              Contents: |
+                target/*.jar
+                Dockerfile
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: drop'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  # ======================================================================
+  # ESTÁGIO 2: DEPLOY (CD - Deploy Contínuo)
+  # O estágio 2 só roda se o estágio de Build for bem-sucedido.
+  # ======================================================================
+  - stage: Deploy
+    displayName: 'Deploy to Render Stage'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        displayName: 'Deploy to Render'
+        steps:
+          - download: current
+            artifact: drop
+
+          - task: Docker@2
+            displayName: 'Login to Docker Hub'
+            inputs:
+              containerRegistry: 'DockerHubConnection'
+              command: 'login'
+
+          - task: Docker@2
+            displayName: 'Build and Push image to Docker Hub'
+            inputs:
+              command: 'buildAndPush'
+              repository: '$(DOCKERHUB_USERNAME)/meu-gestor-de-tarefas'
+              dockerfile: '$(Pipeline.Workspace)/drop/Dockerfile'
+              tags: |
+                $(Build.BuildId)
+                latest
+
+          - task: Bash@3
+            displayName: 'Trigger Render Deploy Hook'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Triggering Render deployment..."
+                curl -X POST "$(RENDER_DEPLOY_HOOK_URL)"
