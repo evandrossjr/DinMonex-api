@@ -1,0 +1,63 @@
+services:
+  # ------------------------------------
+  # SERVIÇO DA APLICAÇÃO SPRING BOOT
+  # ------------------------------------
+  app:
+    # Nome do container para a nossa aplicação.
+    container_name: dimonex-app
+    # Usa a imagem que acabamos de construir.
+    image: dimonex:1.0
+    ports:
+      - "8080:8080"
+    # A parte mais importante: definimos as variáveis de ambiente para o container da aplicação.
+    # Elas sobrescrevem o que está no application-dev.properties.
+    environment:
+      # A URL do banco de dados agora aponta para o nome do serviço 'pg-docker',
+      # não mais 'localhost'. Docker Compose resolve este nome para o IP correto.
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://pg-docker:5432/mydatabase
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=1234567
+    # Garante que o serviço do banco de dados (pg-docker) seja iniciado ANTES da nossa aplicação.
+    depends_on:
+      - pg-docker
+    networks:
+      - dev-network
+
+  # ------------------------------------
+  # SERVIÇO DO BANCO DE DADOS POSTGRESQL
+  # ------------------------------------
+  pg-docker:
+    image: postgres:14-alpine
+    container_name: dev-postgresql
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: 1234567
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./.data/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  # ------------------------------------
+  # SERVIÇO DO PGADMIN
+  # ------------------------------------
+  pgadmin-docker:
+    image: dpage/pgadmin4
+    container_name: dev-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: me@example.com
+      PGADMIN_DEFAULT_PASSWORD: 1234567
+    ports:
+      - "5050:80"
+    volumes:
+      - ./.data/pgadmin:/var/lib/pgadmin
+    depends_on:
+      - pg-docker
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
