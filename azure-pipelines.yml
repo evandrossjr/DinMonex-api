@@ -23,12 +23,18 @@ steps:
       jdkVersionOption: '1.21'
 
   - task: Cache@2
-    displayName: 'Cache Maven dependências'
     inputs:
       key: 'maven | "$(Agent.OS)" | **/pom.xml'
       restoreKeys: |
         maven | "$(Agent.OS)"
-      path: ~/.m2/repository
+      path: $(HOME)/.m2/repository
+    displayName: Cache Maven local repository
+
+  - script: mkdir -p $(HOME)/.m2/repository
+    displayName: Ensure .m2 directory exists
+
+  - script: mvn -B clean package
+    displayName: Build with Maven
 
   - task: Docker@2
     displayName: 'Build e Push da imagem Docker'
