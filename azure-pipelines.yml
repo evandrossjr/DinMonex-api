@@ -25,11 +25,11 @@ variables:
   - group: Dimonex
 
 # ======================================
-# 🔧 Estágio 1 — Build & Test
+# Estágio 1 — Build & Test
 # ======================================
 stages:
   - stage: Build
-    displayName: '🏗️ Build & Test Stage'
+    displayName: 'Build & Test Stage'
     jobs:
       - job: BuildAndTest
         displayName: 'Compila e roda testes com Testcontainers'
@@ -81,10 +81,10 @@ stages:
               publishLocation: 'Container'
 
   # ======================================
-  # 🚀 Estágio 2 — Deploy (Docker + Render)
+  # Estágio 2 — Deploy (Docker + Render)
   # ======================================
   - stage: Deploy
-    displayName: '🚀 Deploy Stage'
+    displayName: 'Deploy Stage'
     dependsOn: Build
     condition: succeeded()
     jobs:

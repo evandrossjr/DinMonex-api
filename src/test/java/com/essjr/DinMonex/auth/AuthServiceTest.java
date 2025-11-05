@@ -1,6 +1,5 @@
-package com.essjr.DinMonex.services;
+package com.essjr.DinMonex.auth;
 
-import com.essjr.DinMonex.auth.AuthService;
 import com.essjr.DinMonex.security.JwtService;
 import com.essjr.DinMonex.auth.dtos.LoginRequestDTO;
 import com.essjr.DinMonex.auth.dtos.RegisterRequestDTO;
