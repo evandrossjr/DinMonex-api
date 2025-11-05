@@ -8,9 +8,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  IMAGE_NAME: 'dimonex'
   MAVEN_OPTS: '-Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository'
-  dockerRegistryServiceConnection: 'DockerHubConnection'
 
 steps:
   - task: Maven@4
@@ -35,11 +33,10 @@ steps:
   - task: Docker@2
     displayName: 'Build e Push da imagem Docker'
     inputs:
-      containerRegistry: '$(dockerRegistryServiceConnection)'
-      repository: '$(IMAGE_NAME)'
+      containerRegistry: 'DockerHubConnection'
+      repository: 'evandrossjr/dimonex'
       command: 'buildAndPush'
       Dockerfile: 'Dockerfile'
-      buildContext: '$(Build.SourcesDirectory)'
       tags: |
         latest
         $(Build.BuildId)
