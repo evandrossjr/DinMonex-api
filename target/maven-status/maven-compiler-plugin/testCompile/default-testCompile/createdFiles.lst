@@ -1,0 +1,9 @@
+com\essjr\DinMonex\transaction\InstallmentRepositoryTest.class
+com\essjr\DinMonex\transaction\TransactionRepositoryTest.class
+com\essjr\DinMonex\repositories\AppUserRepositoryTest.class
+com\essjr\DinMonex\debt\SharedDebtRepositoryTest.class
+com\essjr\DinMonex\DinMonexApplicationTests.class
+com\essjr\DinMonex\services\AuthServiceTest.class
+com\essjr\DinMonex\debt\DebtServiceTest.class
+com\essjr\DinMonex\transaction\TransactionServiceTest.class
+com\essjr\DinMonex\services\JpaUserDetailsServiceTest.class
