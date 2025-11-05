@@ -1,6 +1,5 @@
-package com.essjr.DinMonex.services;
+package com.essjr.DinMonex.auth;
 
-import com.essjr.DinMonex.auth.JpaUserDetailsService;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
 import com.essjr.DinMonex.user.enums.AppUserRole;
