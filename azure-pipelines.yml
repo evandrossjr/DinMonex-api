@@ -1,41 +1,71 @@
-# Arquivo: azure-pipelines.yml
+# ===============================
+# 📘 azure-pipelines.yml — DinMonex
+# CI + CD com Testcontainers (Docker DinD)
+# ===============================
 
 trigger:
-  - main
   - develop
+  - main
 
+# ======================================
+# 🧩 Ambiente base
+# ======================================
 pool:
   vmImage: 'ubuntu-latest'
 
+# Habilita Docker DinD (Docker dentro do pipeline)
+resources:
+  containers:
+    - container: docker
+      image: docker:24.0.5-dind
+      options: --privileged
+
+# Variáveis armazenadas no grupo "Dimonex" (configure no Azure DevOps)
 variables:
   - group: Dimonex
 
+# ======================================
+# 🔧 Estágio 1 — Build & Test
+# ======================================
 stages:
   - stage: Build
-    displayName: 'Build and Test Stage'
+    displayName: '🏗️ Build & Test Stage'
     jobs:
-      - job: Build
-        displayName: 'Build, test, and publish artifacts'
+      - job: BuildAndTest
+        displayName: 'Compila e roda testes com Testcontainers'
+        services:
+          docker: docker
         steps:
+          # Verifica se o Docker está ativo
+          - script: |
+              echo "Verificando instalação do Docker..."
+              docker --version
+              docker info
+            displayName: 'Check Docker'
+
+          # Instala o JDK 21
           - task: JavaToolInstaller@0
             inputs:
               versionSpec: '21'
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
-          - task: Maven@4
-            displayName: 'Build with Maven'
+          # Compila o projeto e roda os testes (usa perfil dev com Testcontainers)
+          - task: Maven@3
+            displayName: 'Build com Maven (perfil dev)'
             inputs:
               mavenPomFile: 'pom.xml'
-              goals: 'clean package'
+              goals: 'clean verify'
+              options: '-Dspring.profiles.active=dev'
               publishJUnitTestResults: true
               testResultsFiles: '**/surefire-reports/TEST-*.xml'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.21'
               cache: 'maven'
 
+          # Copia os artefatos para o estágio seguinte
           - task: CopyFiles@2
-            displayName: 'Copy Files to Artifact Staging Directory'
+            displayName: 'Copiar artefatos gerados'
             inputs:
               SourceFolder: '$(Build.SourcesDirectory)'
               Contents: |
@@ -44,31 +74,36 @@ stages:
               TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: drop'
+            displayName: 'Publicar artefatos: drop'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: 'drop'
               publishLocation: 'Container'
 
+  # ======================================
+  # 🚀 Estágio 2 — Deploy (Docker + Render)
+  # ======================================
   - stage: Deploy
-    displayName: 'Deploy to Render Stage'
+    displayName: '🚀 Deploy Stage'
     dependsOn: Build
     condition: succeeded()
     jobs:
       - job: Deploy
-        displayName: 'Deploy to Render'
+        displayName: 'Publicar imagem no Docker Hub e acionar Render'
         steps:
           - download: current
             artifact: drop
 
+          # Login no Docker Hub
           - task: Docker@2
-            displayName: 'Login to Docker Hub'
+            displayName: 'Login no Docker Hub'
             inputs:
               containerRegistry: 'DockerHubConnection'
               command: 'login'
 
+          # Build e push da imagem
           - task: Docker@2
-            displayName: 'Build and Push image to Docker Hub'
+            displayName: 'Build e Push da imagem'
             inputs:
               command: 'buildAndPush'
               repository: '$(DOCKERHUB_USERNAME)/dimonex'
@@ -77,10 +112,11 @@ stages:
                 $(Build.BuildId)
                 latest
 
+          # Aciona o Render via hook
           - task: Bash@3
-            displayName: 'Trigger Render Deploy Hook'
+            displayName: 'Acionar Deploy no Render'
             inputs:
               targetType: 'inline'
               script: |
-                echo "Triggering Render deployment for Dimonex..."
+                echo "🔁 Chamando hook de deploy no Render..."
                 curl -X POST "$(RENDER_DEPLOY_HOOK_URL)"
