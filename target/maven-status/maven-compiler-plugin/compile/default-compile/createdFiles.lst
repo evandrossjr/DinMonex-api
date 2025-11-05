@@ -1,5 +1,0 @@
-com\essjr\DinMonex\model\AppUser.class
-com\essjr\DinMonex\config\JwtAuthFilter.class
-com\essjr\DinMonex\config\AuthenticationHelper.class
-com\essjr\DinMonex\model\enuns\AppUserRole.class
-com\essjr\DinMonex\DinMonexApplication.class
