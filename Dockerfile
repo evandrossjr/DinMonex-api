@@ -1,66 +1,30 @@
-trigger:
-  branches:
-    include:
-      - main
-      - master
+# ======================================================================
+# ESTÁGIO 1: build da aplicação Java
+# ======================================================================
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
 
-pool:
-  vmImage: 'ubuntu-latest'
+WORKDIR /app
 
-variables:
-  # Nome do JAR e imagem
-  IMAGE_NAME: 'dimonex'
-  MAVEN_OPTS: '-Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository'
+# Copia pom.xml e baixa dependências primeiro
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-steps:
-# ======================================================
-# 1️⃣ Etapa de Build Java + Testes (perfil dev ou test)
-# ======================================================
-- task: Maven@4
-  displayName: 'Compilar e testar com Maven (perfil dev)'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean package'
-    options: '-Pdev -DskipTests=false'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.21'
-    mavenOptions: '-Xmx3072m'
-    mavenAuthenticateFeed: false
+# Copia o restante do código-fonte
+COPY src ./src
 
-# ======================================================
-# 2️⃣ Cache Maven (acelera builds futuros)
-# ======================================================
-- task: Cache@2
-  displayName: 'Cache Maven dependências'
-  inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'
-    restoreKeys: |
-      maven | "$(Agent.OS)"
-    path: $(Pipeline.Workspace)/.m2/repository
+# Compila e empacota (sem rodar testes dentro do container)
+RUN mvn clean package -DskipTests
 
-# ======================================================
-# 3️⃣ Build da imagem Docker
-# ======================================================
-- task: Docker@2
-  displayName: 'Build e Push da imagem Docker'
-  inputs:
-    containerRegistry: '$(dockerRegistryServiceConnection)'  # Conexão configurada no Azure
-    repository: '$(IMAGE_NAME)'
-    command: 'buildAndPush'
-    Dockerfile: 'Dockerfile'
-    buildContext: '$(Build.SourcesDirectory)'
-    tags: |
-      latest
-      $(Build.BuildId)
+# ======================================================================
+# ESTÁGIO 2: execução da aplicação
+# ======================================================================
+FROM eclipse-temurin:21-jre-alpine
 
-# ======================================================
-# 4️⃣ Publicação de Artefato (opcional)
-# ======================================================
-- task: PublishBuildArtifacts@1
-  displayName: 'Publicar .jar como artefato'
-  inputs:
-    PathtoPublish: 'target/*.jar'
-    ArtifactName: 'app'
-    publishLocation: 'Container'
+WORKDIR /app
+
+# Copia o JAR gerado do estágio anterior
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

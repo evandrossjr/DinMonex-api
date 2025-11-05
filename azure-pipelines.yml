@@ -1,122 +1,51 @@
-# ===============================
-# 📘 azure-pipelines.yml — DinMonex
-# CI + CD com Testcontainers (Docker DinD)
-# ===============================
-
 trigger:
-  - develop
-  - main
+  branches:
+    include:
+      - main
+      - master
 
-# ======================================
-# 🧩 Ambiente base
-# ======================================
 pool:
   vmImage: 'ubuntu-latest'
 
-# Habilita Docker DinD (Docker dentro do pipeline)
-resources:
-  containers:
-    - container: docker
-      image: docker:24.0.5-dind
-      options: --privileged
-
-# Variáveis armazenadas no grupo "Dimonex" (configure no Azure DevOps)
 variables:
-  - group: Dimonex
+  IMAGE_NAME: 'dimonex'
+  MAVEN_OPTS: '-Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository'
 
-# ======================================
-# Estágio 1 — Build & Test
-# ======================================
-stages:
-  - stage: Build
-    displayName: 'Build & Test Stage'
-    jobs:
-      - job: BuildAndTest
-        displayName: 'Compila e roda testes com Testcontainers'
-        services:
-          docker: docker
-        steps:
-          # Verifica se o Docker está ativo
-          - script: |
-              echo "Verificando instalação do Docker..."
-              docker --version
-              docker info
-            displayName: 'Check Docker'
+steps:
+  - task: Maven@4
+    displayName: 'Compilar e testar com Maven (perfil dev)'
+    inputs:
+      mavenPomFile: 'pom.xml'
+      goals: 'clean package'
+      options: '-Pdev -DskipTests=false'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.21'
 
-          # Instala o JDK 21
-          - task: JavaToolInstaller@0
-            inputs:
-              versionSpec: '21'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
+  - task: Cache@2
+    displayName: 'Cache Maven dependências'
+    inputs:
+      key: 'maven | "$(Agent.OS)" | **/pom.xml'
+      restoreKeys: |
+        maven | "$(Agent.OS)"
+      path: $(Pipeline.Workspace)/.m2/repository
 
-          # Compila o projeto e roda os testes (usa perfil dev com Testcontainers)
-          - task: Maven@3
-            displayName: 'Build com Maven (perfil dev)'
-            inputs:
-              mavenPomFile: 'pom.xml'
-              goals: 'clean verify'
-              options: '-Dspring.profiles.active=dev'
-              publishJUnitTestResults: true
-              testResultsFiles: '**/surefire-reports/TEST-*.xml'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.21'
-              cache: 'maven'
+  - task: Docker@2
+    displayName: 'Build e Push da imagem Docker'
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: '$(IMAGE_NAME)'
+      command: 'buildAndPush'
+      Dockerfile: 'Dockerfile'
+      buildContext: '$(Build.SourcesDirectory)'
+      tags: |
+        latest
+        $(Build.BuildId)
 
-          # Copia os artefatos para o estágio seguinte
-          - task: CopyFiles@2
-            displayName: 'Copiar artefatos gerados'
-            inputs:
-              SourceFolder: '$(Build.SourcesDirectory)'
-              Contents: |
-                target/*.jar
-                Dockerfile
-              TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publicar artefatos: drop'
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'drop'
-              publishLocation: 'Container'
-
-  # ======================================
-  # Estágio 2 — Deploy (Docker + Render)
-  # ======================================
-  - stage: Deploy
-    displayName: 'Deploy Stage'
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - job: Deploy
-        displayName: 'Publicar imagem no Docker Hub e acionar Render'
-        steps:
-          - download: current
-            artifact: drop
-
-          # Login no Docker Hub
-          - task: Docker@2
-            displayName: 'Login no Docker Hub'
-            inputs:
-              containerRegistry: 'DockerHubConnection'
-              command: 'login'
-
-          # Build e push da imagem
-          - task: Docker@2
-            displayName: 'Build e Push da imagem'
-            inputs:
-              command: 'buildAndPush'
-              repository: '$(DOCKERHUB_USERNAME)/dimonex'
-              dockerfile: '$(Pipeline.Workspace)/drop/Dockerfile'
-              tags: |
-                $(Build.BuildId)
-                latest
-
-          # Aciona o Render via hook
-          - task: Bash@3
-            displayName: 'Acionar Deploy no Render'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "🔁 Chamando hook de deploy no Render..."
-                curl -X POST "$(RENDER_DEPLOY_HOOK_URL)"
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publicar .jar como artefato'
+    inputs:
+      PathtoPublish: 'target/*.jar'
+      ArtifactName: 'app'
+      publishLocation: 'Container'
