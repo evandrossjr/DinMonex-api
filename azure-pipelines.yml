@@ -28,7 +28,7 @@ steps:
       key: 'maven | "$(Agent.OS)" | **/pom.xml'
       restoreKeys: |
         maven | "$(Agent.OS)"
-      path: $(Pipeline.Workspace)/.m2/repository
+      path: ~/.m2/repository
 
   - task: Docker@2
     displayName: 'Build e Push da imagem Docker'
