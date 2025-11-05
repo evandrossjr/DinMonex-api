@@ -1,17 +1,16 @@
-
-# Arquivo: azure-pipelines.yml (Versão Final com CI + CD)
+# Arquivo: azure-pipelines.yml
 
 trigger:
-  - main, develop
+  - main
+  - develop
 
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  - group: Dimonex
+
 stages:
-  # ======================================================================
-  # ESTÁGIO 1: BUILD (CI - Integração Contínua)
-  # Este estágio compila, testa e publica os artefactos.
-  # ======================================================================
   - stage: Build
     displayName: 'Build and Test Stage'
     jobs:
@@ -51,10 +50,6 @@ stages:
               ArtifactName: 'drop'
               publishLocation: 'Container'
 
-  # ======================================================================
-  # ESTÁGIO 2: DEPLOY (CD - Deploy Contínuo)
-  # O estágio 2 só roda se o estágio de Build for bem-sucedido.
-  # ======================================================================
   - stage: Deploy
     displayName: 'Deploy to Render Stage'
     dependsOn: Build
@@ -76,7 +71,7 @@ stages:
             displayName: 'Build and Push image to Docker Hub'
             inputs:
               command: 'buildAndPush'
-              repository: '$(DOCKERHUB_USERNAME)/meu-gestor-de-tarefas'
+              repository: '$(DOCKERHUB_USERNAME)/dimonex'
               dockerfile: '$(Pipeline.Workspace)/drop/Dockerfile'
               tags: |
                 $(Build.BuildId)
@@ -87,5 +82,5 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                echo "Triggering Render deployment..."
+                echo "Triggering Render deployment for Dimonex..."
                 curl -X POST "$(RENDER_DEPLOY_HOOK_URL)"
