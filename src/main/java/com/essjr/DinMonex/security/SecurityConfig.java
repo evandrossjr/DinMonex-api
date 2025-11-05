@@ -96,7 +96,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Permite que o nosso frontend (a correr em localhost:4200) faça pedidos.
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://dimonex.netlify.app"));
         // Permite os métodos HTTP mais comuns.
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Permite os cabeçalhos mais comuns, incluindo o 'Authorization' para o nosso token JWT.
