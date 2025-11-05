@@ -10,6 +10,7 @@ pool:
 variables:
   IMAGE_NAME: 'dimonex'
   MAVEN_OPTS: '-Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository'
+  dockerRegistryServiceConnection: 'DockerHubConnection'
 
 steps:
   - task: Maven@4
