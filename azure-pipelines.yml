@@ -18,11 +18,10 @@ stages:
       - job: Build
         displayName: 'Build, test, and publish artifacts'
         steps:
-          - task: JavaToolInstaller@0
+          - task: UseJavaVersion@1
             inputs:
               versionSpec: '21'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'Temurin'
+              distribution: 'temurin'
 
           - task: Maven@4
             displayName: 'Build with Maven'
