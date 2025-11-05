@@ -40,10 +40,3 @@ steps:
       tags: |
         latest
         $(Build.BuildId)
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publicar .jar como artefato'
-    inputs:
-      PathtoPublish: 'target/*.jar'
-      ArtifactName: 'app'
-      publishLocation: 'Container'
