@@ -12,6 +12,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.*;
  * @ExtendWith(MockitoExtension.class) ativa a integração do JUnit 5 com o Mockito.
  */
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class TransactionServiceTest {
 
     // @Mock cria uma versão "falsa" (um mock) das dependências.
