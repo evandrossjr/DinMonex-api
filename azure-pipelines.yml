@@ -12,11 +12,11 @@ variables:
 
 steps:
   - task: Maven@4
-    displayName: 'Compilar e testar com Maven (perfil dev)'
+    displayName: 'Compilar e testar com Maven (perfil test)'
     inputs:
       mavenPomFile: 'pom.xml'
       goals: 'clean package'
-      options: '-Pdev -DskipTests=false'
+      options: '-Ptest -DskipTests=false'
       publishJUnitResults: true
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
