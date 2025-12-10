@@ -1,13 +1,11 @@
 package com.essjr.DinMonex.transaction;
 
-import com.essjr.DinMonex.transaction.dtos.CreateTransactionRequestDTO;
-import com.essjr.DinMonex.transaction.dtos.CreditCardTransactionRequestDTO;
-import com.essjr.DinMonex.transaction.dtos.TransactionRequestDTO;
-import com.essjr.DinMonex.transaction.dtos.TransactionResponseDTO;
+import com.essjr.DinMonex.transaction.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -75,6 +73,21 @@ public class TransactionController {
     @PostMapping("/credit-card")
     public ResponseEntity<TransactionResponseDTO> createCreditCardTransaction(@RequestBody CreditCardTransactionRequestDTO dto) {
         return ResponseEntity.ok(transactionService.createCreditCardTransaction(dto));
+    }
+
+    @GetMapping("/dashboard/resumo")
+    public ResponseEntity<ResumeTransactionDTO> getResumo(@RequestParam(defaultValue = "0") int mes,
+                                                           @RequestParam(defaultValue = "0") int ano){
+
+
+        if (mes == 0 || ano == 0) {
+            LocalDate hoje = LocalDate.now();
+            mes = hoje.getMonthValue();
+            ano = hoje.getYear();
+        }
+
+        var resumo = transactionService.resumoMensal(ano, mes);
+        return ResponseEntity.ok(resumo);
     }
 }
 

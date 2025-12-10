@@ -1,10 +1,14 @@
 package com.essjr.DinMonex.transaction;
 
+import com.essjr.DinMonex.transaction.dtos.ResumeTransactionDTO;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,4 +54,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * Este é um método de segurança crucial para garantir o isolamento dos dados.
      */
     Optional<Transaction> findByIdAndAppUser(Long id, AppUser appUser);
+
+
+    @Query("""
+            SELECT new com.essjr.DinMonex.transaction.dtos.ResumeTransactionDTO(
+                COALESCE(SUM(v.value), 0),
+                COALESCE(SUM(CASE WHEN v.status = 'PAID' THEN v.value ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN v.status = 'PENDING' THEN v.value ELSE 0 END), 0)    
+            )
+            FROM Transaction v
+            WHERE v.dueDate >= :inicio AND v.dueDate <= :fim                
+            """)
+    ResumeTransactionDTO resumeTransaction(@Param("inicio") LocalDate inicio,
+                                          @Param("fim") LocalDate fim);
 }

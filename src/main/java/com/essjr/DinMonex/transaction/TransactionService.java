@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -167,6 +170,19 @@ public class TransactionService {
         dto.setPaid(installment.isPaid());
         return dto;
     }
+
+
+    public ResumeTransactionDTO resumoMensal(int ano, int mes){
+
+        YearMonth anoMes = YearMonth.of(ano, mes);
+
+        LocalDate incio = anoMes.atDay(1);
+        LocalDate fim = anoMes.atEndOfMonth();
+
+        return transactionRepository.resumeTransaction(incio, fim);
+    }
+
+
 }
 
 

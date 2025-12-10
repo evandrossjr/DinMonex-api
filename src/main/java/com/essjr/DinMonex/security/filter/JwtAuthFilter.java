@@ -2,6 +2,7 @@ package com.essjr.DinMonex.security.filter;
 
 import com.essjr.DinMonex.auth.JpaUserDetailsService;
 import com.essjr.DinMonex.security.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,20 +46,36 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.jpaUserDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.jpaUserDetailsService.loadUserByUsername(userEmail);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (ExpiredJwtException e) {
+            // --- TRATAMENTO DO TOKEN EXPIRADO ---
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // Retorna 403
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Token expirado\", \"message\": \"" + e.getMessage() + "\"}");
+            return; // IMPORTANTE: Interrompe a requisição aqui, não chama o filterChain
+
+        } catch (Exception e) {
+            // Tratamento para token malformado ou inválido
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // Retorna 403
+            response.getWriter().write("{\"error\": \"Token inválido\"}");
+            return; // Interrompe a requisição
         }
+
         filterChain.doFilter(request, response);
     }
 }
