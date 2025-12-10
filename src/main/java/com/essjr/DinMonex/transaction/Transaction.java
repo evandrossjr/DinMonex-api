@@ -1,6 +1,7 @@
 package com.essjr.DinMonex.transaction;
 
 
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import jakarta.persistence.*;
@@ -56,11 +57,17 @@ public class Transaction {
     private Integer currentInstallment;
 
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false )
+    private TransactionStatus status;
+
+
+
 
     public Transaction() {
     }
 
-    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser, List<Installment> installments, Integer totalInstallments, Integer currentInstallment) {
+    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser, List<Installment> installments, Integer totalInstallments, Integer currentInstallment, TransactionStatus status) {
         this.id = id;
         this.description = description;
         this.value = value;
@@ -71,6 +78,7 @@ public class Transaction {
         this.installments = installments;
         this.totalInstallments = totalInstallments;
         this.currentInstallment = currentInstallment;
+        this.status = status;
     }
 
     public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser) {
@@ -161,5 +169,13 @@ public class Transaction {
 
     public void setCurrentInstallment(Integer currentInstallment) {
         this.currentInstallment = currentInstallment;
+    }
+
+    public TransactionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
     }
 }

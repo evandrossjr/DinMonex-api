@@ -1,5 +1,6 @@
 package com.essjr.DinMonex.transaction;
 
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -61,6 +62,7 @@ public class SchedulingService {
                 newTransaction.setRecurring(true); // Mantém a recorrência
                 newTransaction.setAppUser(oldTransaction.getAppUser());
                 newTransaction.setDueDate(newDueDate); // A nova data de vencimento
+                newTransaction.setStatus(TransactionStatus.PENDING);
 
                 transactionRepository.save(newTransaction);
                 log.info("Criada nova transação recorrente {} para o utilizador {}", newTransaction.getDescription(), newTransaction.getAppUser().getEmail() );
