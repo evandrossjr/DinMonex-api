@@ -81,7 +81,7 @@ public class Transaction {
         this.status = status;
     }
 
-    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser) {
+    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser, TransactionStatus status) {
         this.id = id;
         this.description = description;
         this.value = value;
@@ -89,6 +89,7 @@ public class Transaction {
         this.isRecurring = isRecurring;
         this.type = type;
         this.appUser = appUser;
+        this.status = status;
     }
 
     public Long getId() {

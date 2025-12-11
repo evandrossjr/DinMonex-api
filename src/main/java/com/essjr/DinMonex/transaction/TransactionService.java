@@ -3,6 +3,7 @@ package com.essjr.DinMonex.transaction;
 
 import com.essjr.DinMonex.security.AuthenticationHelper;
 import com.essjr.DinMonex.transaction.dtos.*;
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,12 @@ public class TransactionService {
         newTransaction.setRecurring(dto.isRecurring());
         newTransaction.setAppUser(currentUser);
         newTransaction.setType(TransactionType.CONSUMPTION);
+        if (dto.getStatus() == null){
+            newTransaction.setStatus(TransactionStatus.PENDING);
+        } else{
+            newTransaction.setStatus(dto.getStatus());
+
+        }
 
         Transaction savedTransaction = transactionRepository.save(newTransaction);
         return convertToResponseDTO(savedTransaction);

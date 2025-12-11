@@ -1,5 +1,6 @@
 package com.essjr.DinMonex.transaction.dtos;
 
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
@@ -20,6 +21,9 @@ public class TransactionRequestDTO {
     @JsonProperty("isRecurring")
     private boolean isRecurring;
 
+    private TransactionStatus status;
+
+
     // Getters e Setters
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -29,4 +33,11 @@ public class TransactionRequestDTO {
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public boolean isRecurring() { return isRecurring; }
     public void setRecurring(boolean recurring) { this.isRecurring = recurring; }
+    public TransactionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
+    }
 }

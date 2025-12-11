@@ -2,6 +2,7 @@ package com.essjr.DinMonex.transaction;
 
 
 
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
@@ -66,6 +67,7 @@ class InstallmentRepositoryTest {
         parentTransaction.setType(TransactionType.CREDIT_CARD);
         parentTransaction.setTotalInstallments(3);
         parentTransaction.setAppUser(testUser);
+        parentTransaction.setStatus(TransactionStatus.PENDING);
 
         Installment installment1 = new Installment();
         installment1.setInstallmentNumber(1);
@@ -80,6 +82,7 @@ class InstallmentRepositoryTest {
         installment2.setDueDate(LocalDate.now().plusMonths(1));
         installment2.setPaid(false);
         installment2.setTransaction(parentTransaction);
+
 
         parentTransaction.getInstallments().addAll(List.of(installment1, installment2));
 

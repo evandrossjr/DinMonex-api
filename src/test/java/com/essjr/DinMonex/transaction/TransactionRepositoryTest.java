@@ -1,6 +1,7 @@
 package com.essjr.DinMonex.transaction;
 
 
+import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
 import com.essjr.DinMonex.user.AppUser;
 import com.essjr.DinMonex.user.AppUserRepository;
@@ -57,10 +58,10 @@ class TransactionRepositoryTest {
     @Test
     @DisplayName("Deve encontrar todas as transações de consumo de um utilizador, e apenas as dele")
     void deveEncontrarTransacoesDeConsumoPorUtilizador() {
-        createTestTransaction("Conta de Luz", new BigDecimal("150.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, false);
-        createTestTransaction("Conta de Água", new BigDecimal("80.50"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true);
-        createTestTransaction("Compra Online", new BigDecimal("300.00"), LocalDate.now(), user1, TransactionType.CREDIT_CARD, false);
-        createTestTransaction("Gás", new BigDecimal("95.00"), LocalDate.now(), user2, TransactionType.CONSUMPTION, true);
+        createTestTransaction("Conta de Luz", new BigDecimal("150.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, false, TransactionStatus.PENDING);
+        createTestTransaction("Conta de Água", new BigDecimal("80.50"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true, TransactionStatus.PAID);
+        createTestTransaction("Compra Online", new BigDecimal("300.00"), LocalDate.now(), user1, TransactionType.CREDIT_CARD, false, TransactionStatus.PENDING);
+        createTestTransaction("Gás", new BigDecimal("95.00"), LocalDate.now(), user2, TransactionType.CONSUMPTION, true, TransactionStatus.PENDING);
 
         List<Transaction> foundTransactions = transactionRepository.findAllByAppUserAndType(user1, TransactionType.CONSUMPTION);
 
@@ -74,7 +75,7 @@ class TransactionRepositoryTest {
     @Test
     @DisplayName("Deve encontrar uma transação pelo ID se pertencer ao utilizador correto")
     void deveEncontrarTransacaoPorIdEUtilizador() {
-        Transaction savedTransaction = createTestTransaction("Aluguer", new BigDecimal("1200.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true);
+        Transaction savedTransaction = createTestTransaction("Aluguel", new BigDecimal("1200.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true, TransactionStatus.PENDING);
 
         Optional<Transaction> foundTransactionOpt = transactionRepository.findByIdAndAppUser(savedTransaction.getId(), user1);
 
@@ -85,14 +86,14 @@ class TransactionRepositoryTest {
     @Test
     @DisplayName("NÃO deve encontrar uma transação pelo ID se pertencer a outro utilizador")
     void naoDeveEncontrarTransacaoDeOutroUtilizador() {
-        Transaction savedTransaction = createTestTransaction("Internet", new BigDecimal("100.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true);
+        Transaction savedTransaction = createTestTransaction("Internet", new BigDecimal("100.00"), LocalDate.now(), user1, TransactionType.CONSUMPTION, true, TransactionStatus.PENDING);
 
         Optional<Transaction> foundTransactionOpt = transactionRepository.findByIdAndAppUser(savedTransaction.getId(), user2);
 
         assertThat(foundTransactionOpt).isNotPresent();
     }
 
-    private Transaction createTestTransaction(String desc, BigDecimal value, LocalDate date, AppUser owner, TransactionType type, boolean isRecurring) {
+    private Transaction createTestTransaction(String desc, BigDecimal value, LocalDate date, AppUser owner, TransactionType type, boolean isRecurring, TransactionStatus status) {
         Transaction tx = new Transaction();
         tx.setDescription(desc);
         tx.setValue(value);
@@ -100,6 +101,7 @@ class TransactionRepositoryTest {
         tx.setAppUser(owner);
         tx.setType(type);
         tx.setRecurring(isRecurring);
+        tx.setStatus(status);
         return transactionRepository.save(tx);
     }
 }
