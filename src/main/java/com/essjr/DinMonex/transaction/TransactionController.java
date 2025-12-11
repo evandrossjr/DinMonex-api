@@ -24,8 +24,13 @@ public class TransactionController {
      * Mapeado para GET /api/transactions
      */
     @GetMapping
-    public ResponseEntity<List<TransactionResponseDTO>> getAllMyTransactions() {
-        return ResponseEntity.ok(transactionService.getAllMyTransactions());
+    public ResponseEntity<List<TransactionResponseDTO>> getAllMyTransactions(
+            @RequestParam(required = false, defaultValue = "0") int mes,
+            @RequestParam(required = false, defaultValue = "0") int ano) {
+
+        List<TransactionResponseDTO> transactions = transactionService.getAllMyTransactions(mes, ano);
+
+        return ResponseEntity.ok(transactions);
     }
 
     // --- Endpoints para Contas de Consumo ---
@@ -89,5 +94,7 @@ public class TransactionController {
         var resumo = transactionService.resumoMensal(ano, mes);
         return ResponseEntity.ok(resumo);
     }
+
+
 }
 

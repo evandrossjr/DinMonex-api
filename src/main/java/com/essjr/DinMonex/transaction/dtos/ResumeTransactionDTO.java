@@ -31,11 +31,11 @@ public class ResumeTransactionDTO{
         this.totalPago = totalPago;
     }
 
-    public BigDecimal getTotalPendent() {
+    public BigDecimal getTotalPendente() {
         return totalPendente;
     }
 
-    public void setTotalPendent(BigDecimal totalPendent) {
-        this.totalPendente = totalPendent;
+    public void setTotalPendente(BigDecimal totalPendent) {
+        this.totalPendente = totalPendente;
     }
 }
