@@ -21,12 +21,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @param appUser O utilizador "dono" das transações.
      * @return Uma lista de transações.
      */
-    List<Transaction> findAllByAppUser(AppUser appUser);
+    List<Transaction> findAllByAppUserAndDueDateBetween(AppUser appUser, LocalDate startDate, LocalDate endDate);
 
 
     /**
      * NOVO MÉTODO: Encontra todas as transações recorrentes dentro de um intervalo de datas.
-     * @param isRecurring Deve ser 'true'.
      * @param startDate A data de início do período.
      * @param endDate A data de fim do período.
      * @return Uma lista de transações recorrentes.
@@ -63,8 +62,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                 COALESCE(SUM(CASE WHEN v.status = 'PENDING' THEN v.value ELSE 0 END), 0)    
             )
             FROM Transaction v
-            WHERE v.dueDate >= :inicio AND v.dueDate <= :fim                
+            WHERE v.dueDate >= :inicio AND v.dueDate <= :fim AND v.appUser =:user      
             """)
     ResumeTransactionDTO resumeTransaction(@Param("inicio") LocalDate inicio,
-                                          @Param("fim") LocalDate fim);
+                                          @Param("fim") LocalDate fim,
+                                           @Param("user") AppUser user);
 }

@@ -36,12 +36,34 @@ public class TransactionService {
      * @return Uma lista de DTOs de transação, incluindo as parcelas.
      */
     @Transactional(readOnly = true)
-    public List<TransactionResponseDTO> getAllMyTransactions() {
+    public List<TransactionResponseDTO> getAllMyTransactions(int mes, int ano) {
         AppUser currentUser = authenticationHelper.getCurrentUser();
-        List<Transaction> transactions = transactionRepository.findAllByAppUser(currentUser);
+
+        DateRange datas = calcularDatas(mes, ano);
+
+        List<Transaction> transactions = transactionRepository.findAllByAppUserAndDueDateBetween(currentUser, datas.inicio(), datas.fim());
         return transactions.stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public ResumeTransactionDTO resumoMensal(int ano, int mes){
+
+        AppUser currentUser = authenticationHelper.getCurrentUser();
+
+        DateRange datas = calcularDatas(mes, ano);
+        return transactionRepository.resumeTransaction(datas.inicio(), datas.fim(), currentUser);
+    }
+
+    private DateRange calcularDatas(int mes, int ano){
+        if (mes == 0 || ano == 0){
+            LocalDate hoje = LocalDate.now();
+            mes = hoje.getMonthValue();
+            ano = hoje.getYear();
+        }
+
+        YearMonth anoMes = YearMonth.of(ano, mes);
+        return new DateRange(anoMes.atDay(1), anoMes.atEndOfMonth());
     }
 
     @Transactional(readOnly = true)
@@ -179,15 +201,6 @@ public class TransactionService {
     }
 
 
-    public ResumeTransactionDTO resumoMensal(int ano, int mes){
-
-        YearMonth anoMes = YearMonth.of(ano, mes);
-
-        LocalDate incio = anoMes.atDay(1);
-        LocalDate fim = anoMes.atEndOfMonth();
-
-        return transactionRepository.resumeTransaction(incio, fim);
-    }
 
 
 }
