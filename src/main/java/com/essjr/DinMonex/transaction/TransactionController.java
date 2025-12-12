@@ -95,6 +95,12 @@ public class TransactionController {
         return ResponseEntity.ok(resumo);
     }
 
+    @PatchMapping("/{id}/pay")
+    public ResponseEntity<Void> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusDTO dto) {
+        transactionService.updateTransactionStatus(id, dto.paid());
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
 
