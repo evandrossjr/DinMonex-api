@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -97,34 +98,55 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponseDTO createCreditCardTransaction(CreditCardTransactionRequestDTO dto) {
+    public List<TransactionResponseDTO> createCreditCardTransaction(CreditCardTransactionRequestDTO dto) {
+
+        // --- LOGS DE DEBUG ---
+        System.out.println(">>> RECEBI NO SERVICE: " + dto.getDescription());
+        System.out.println(">>> VALOR: " + dto.getValue());
+        System.out.println(">>> DATA: " + dto.getDueDate());
+        System.out.println(">>> PARCELAS: " + dto.getTotalInstallments());
+        // ---------------------
         AppUser currentUser = authenticationHelper.getCurrentUser();
+        List<Transaction> transactionToSave = new ArrayList<>();
 
-        Transaction parentTransaction = new Transaction();
-        parentTransaction.setDescription(dto.getDescription());
-        parentTransaction.setValue(dto.getValue());
-        parentTransaction.setDueDate(dto.getDueDate());
-        parentTransaction.setAppUser(currentUser);
-        parentTransaction.setType(TransactionType.CREDIT_CARD);
-        parentTransaction.setRecurring(false);
-        parentTransaction.setTotalInstallments(dto.getTotalInstallments());
+        int totalParcelas = (dto.getTotalInstallments() != null && dto.getTotalInstallments() > 0)
+                ? dto.getTotalInstallments() : 1;
 
-        if (dto.getTotalInstallments() != null && dto.getTotalInstallments() > 0) {
-            BigDecimal installmentValue = dto.getValue().divide(new BigDecimal(dto.getTotalInstallments()), 2, RoundingMode.HALF_UP);
+        BigDecimal valorParcela = dto.getValue().divide(BigDecimal.valueOf(totalParcelas), 2, RoundingMode.DOWN);
 
-            for (int i = 1; i <= dto.getTotalInstallments(); i++) {
-                Installment installment = new Installment();
-                installment.setInstallmentNumber(i);
-                installment.setValue(installmentValue);
-                installment.setDueDate(dto.getDueDate().plusMonths(i - 1));
-                installment.setPaid(false);
-                installment.setTransaction(parentTransaction);
-                parentTransaction.getInstallments().add(installment);
+        BigDecimal sobra = dto.getValue().subtract(valorParcela.multiply(BigDecimal.valueOf(totalParcelas)));
+
+        for (int i = 0; i < totalParcelas; i++) {
+            Transaction t = new Transaction();
+
+            t.setAppUser(currentUser);
+            t.setType(TransactionType.CREDIT_CARD);
+            t.setRecurring(false);
+            t.setStatus(TransactionStatus.PENDING);
+            t.setTotalInstallments(totalParcelas);
+            t.setCurrentInstallment(i + 1);
+            if (i == 0){
+                t.setDueDate(dto.getDueDate());
+            } else {
+                t.setDueDate(dto.getDueDate().plusMonths(1));
             }
+            if (i == 0) {
+                t.setValue((valorParcela.add(sobra)));
+            } else {
+                t.setValue(valorParcela);
+            }
+
+            String novaDescricao = String.format("%s (%d/%d)", dto.getDescription(), (i + 1), totalParcelas);
+            t.setDescription(novaDescricao);
+
+            transactionToSave.add(t);
         }
 
-        Transaction savedTransaction = transactionRepository.save(parentTransaction);
-        return convertToResponseDTO(savedTransaction);
+        List<Transaction> savedTransactions = transactionRepository.saveAll(transactionToSave);
+
+        // --- LOG FINAL ---
+        System.out.println(">>> SALVOU NO BANCO: " + savedTransactions.size() + " REGISTROS.");
+        return savedTransactions.stream().map(this::convertToResponseDTO).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -172,36 +194,14 @@ public class TransactionService {
         dto.setDueDate(transaction.getDueDate());
         dto.setRecurring(transaction.isRecurring());
         dto.setType(transaction.getType().name());
+
+        if(transaction.getStatus() != null){
+            dto.setStatus(transaction.getStatus().name());
+        }
         dto.setTotalInstallments(transaction.getTotalInstallments());
 
-        // Se houver parcelas na entidade, converte-as para DTOs também.
-        if (transaction.getInstallments() != null && !transaction.getInstallments().isEmpty()) {
-            List<InstallmentDTO> installmentDTOs = transaction.getInstallments().stream()
-                    .map(this::convertToInstallmentDTO)
-                    .collect(Collectors.toList());
-            dto.setInstallments(installmentDTOs);
-        } else {
-            dto.setInstallments(Collections.emptyList()); // Garante que a lista nunca seja nula.
-        }
-
         return dto;
     }
-
-    /**
-     * Converte uma entidade Installment para um InstallmentDTO.
-     */
-    private InstallmentDTO convertToInstallmentDTO(Installment installment) {
-        InstallmentDTO dto = new InstallmentDTO();
-        dto.setId(installment.getId());
-        dto.setInstallmentNumber(installment.getInstallmentNumber());
-        dto.setValue(installment.getValue());
-        dto.setDueDate(installment.getDueDate());
-        dto.setPaid(installment.isPaid());
-        return dto;
-    }
-
-
-
 
 }
 

@@ -46,10 +46,6 @@ public class Transaction {
     private AppUser appUser;
 
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Installment> installments = new ArrayList<>();
-
-
     @Column(nullable = true)
     private Integer totalInstallments;
 
@@ -67,7 +63,7 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser, List<Installment> installments, Integer totalInstallments, Integer currentInstallment, TransactionStatus status) {
+    public Transaction(Long id, String description, BigDecimal value, LocalDate dueDate, boolean isRecurring, TransactionType type, AppUser appUser, Integer totalInstallments, Integer currentInstallment, TransactionStatus status) {
         this.id = id;
         this.description = description;
         this.value = value;
@@ -75,7 +71,6 @@ public class Transaction {
         this.isRecurring = isRecurring;
         this.type = type;
         this.appUser = appUser;
-        this.installments = installments;
         this.totalInstallments = totalInstallments;
         this.currentInstallment = currentInstallment;
         this.status = status;
@@ -146,14 +141,6 @@ public class Transaction {
 
     public void setAppUser(AppUser appUser) {
         this.appUser = appUser;
-    }
-
-    public List<Installment> getInstallments() {
-        return installments;
-    }
-
-    public void setInstallments(List<Installment> installments) {
-        this.installments = installments;
     }
 
     public Integer getTotalInstallments() {
