@@ -57,7 +57,8 @@ public class Transaction {
     @Column(name = "status", nullable = false )
     private TransactionStatus status;
 
-
+    @Column(name = "payment_date")
+    private LocalDate paymentDate;
 
 
     public Transaction() {
@@ -165,5 +166,13 @@ public class Transaction {
 
     public void setStatus(TransactionStatus status) {
         this.status = status;
+    }
+
+    public LocalDate getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDate paymentDate) {
+        this.paymentDate = paymentDate;
     }
 }

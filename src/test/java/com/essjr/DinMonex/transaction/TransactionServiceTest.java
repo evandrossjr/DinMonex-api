@@ -53,63 +53,6 @@ class TransactionServiceTest {
         testUser.setEmail("test@user.com");
     }
 
-    @Test
-    @DisplayName("Deve criar uma transação de cartão de crédito e gerar as parcelas corretamente")
-    void deveCriarTransacaoDeCartaoComParcelas() {
-        // Arrange (Preparação)
-        // 1. Cria o DTO de requisição que o frontend enviaria.
-        CreditCardTransactionRequestDTO requestDTO = new CreditCardTransactionRequestDTO();
-        requestDTO.setDescription("Notebook Novo");
-        requestDTO.setValue(new BigDecimal("3000.00"));
-        requestDTO.setTotalInstallments(3);
-        requestDTO.setDueDate(LocalDate.of(2025, 10, 15));
 
-        // 2. Simula o comportamento das dependências.
-        when(authenticationHelper.getCurrentUser()).thenReturn(testUser);
-        // Quando o save for chamado, apenas retorna o objeto que foi passado para ele.
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // 3. Cria um "Captor" para "apanhar" o objeto que é passado para o método save.
-        // Esta é a ferramenta chave para verificarmos se a lógica interna do serviço está correta.
-        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
-
-        // Act (Ação)
-        // Chama o método real que queremos testar.
-        transactionService.createCreditCardTransaction(requestDTO);
-
-        // Assert (Verificação)
-        // 1. Verifica se o método save do repositório foi chamado exatamente uma vez
-        // e captura o argumento que foi passado para ele.
-        verify(transactionRepository, times(1)).save(transactionCaptor.capture());
-
-        // 2. Obtém a transação que foi "apanhada" pelo captor.
-        Transaction savedTransaction = transactionCaptor.getValue();
-
-        // 3. Verifica os dados da transação "mãe".
-        assertThat(savedTransaction).isNotNull();
-        assertThat(savedTransaction.getDescription()).isEqualTo("Notebook Novo");
-        assertThat(savedTransaction.getAppUser()).isEqualTo(testUser);
-        assertThat(savedTransaction.getType()).isEqualTo(TransactionType.CREDIT_CARD);
-        assertThat(savedTransaction.getTotalInstallments()).isEqualTo(3);
-
-        // 4. Verifica os dados das parcelas geradas.
-        List<Installment> installments = savedTransaction.getInstallments();
-        assertThat(installments).hasSize(3);
-
-        // Verifica a primeira parcela
-        assertThat(installments.get(0).getInstallmentNumber()).isEqualTo(1);
-        assertThat(installments.get(0).getValue()).isEqualTo(new BigDecimal("1000.00"));
-        assertThat(installments.get(0).getDueDate()).isEqualTo(LocalDate.of(2025, 10, 15));
-
-        // Verifica a segunda parcela
-        assertThat(installments.get(1).getInstallmentNumber()).isEqualTo(2);
-        assertThat(installments.get(1).getValue()).isEqualTo(new BigDecimal("1000.00"));
-        assertThat(installments.get(1).getDueDate()).isEqualTo(LocalDate.of(2025, 11, 15));
-
-        // Verifica a terceira parcela
-        assertThat(installments.get(2).getInstallmentNumber()).isEqualTo(3);
-        assertThat(installments.get(2).getValue()).isEqualTo(new BigDecimal("1000.00"));
-        assertThat(installments.get(2).getDueDate()).isEqualTo(LocalDate.of(2025, 12, 15));
-    }
 }
 

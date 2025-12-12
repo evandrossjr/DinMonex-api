@@ -100,12 +100,6 @@ public class TransactionService {
     @Transactional
     public List<TransactionResponseDTO> createCreditCardTransaction(CreditCardTransactionRequestDTO dto) {
 
-        // --- LOGS DE DEBUG ---
-        System.out.println(">>> RECEBI NO SERVICE: " + dto.getDescription());
-        System.out.println(">>> VALOR: " + dto.getValue());
-        System.out.println(">>> DATA: " + dto.getDueDate());
-        System.out.println(">>> PARCELAS: " + dto.getTotalInstallments());
-        // ---------------------
         AppUser currentUser = authenticationHelper.getCurrentUser();
         List<Transaction> transactionToSave = new ArrayList<>();
 
@@ -128,7 +122,7 @@ public class TransactionService {
             if (i == 0){
                 t.setDueDate(dto.getDueDate());
             } else {
-                t.setDueDate(dto.getDueDate().plusMonths(1));
+                t.setDueDate(dto.getDueDate().plusMonths(i));
             }
             if (i == 0) {
                 t.setValue((valorParcela.add(sobra)));
@@ -144,8 +138,6 @@ public class TransactionService {
 
         List<Transaction> savedTransactions = transactionRepository.saveAll(transactionToSave);
 
-        // --- LOG FINAL ---
-        System.out.println(">>> SALVOU NO BANCO: " + savedTransactions.size() + " REGISTROS.");
         return savedTransactions.stream().map(this::convertToResponseDTO).collect(Collectors.toList());
     }
 
@@ -201,6 +193,26 @@ public class TransactionService {
         dto.setTotalInstallments(transaction.getTotalInstallments());
 
         return dto;
+    }
+
+    @Transactional
+    public void updateTransactionStatus(Long id, boolean isPaid) {
+        AppUser currentUser = authenticationHelper.getCurrentUser();
+
+        Transaction transaction = transactionRepository.findByIdAndAppUser(id, currentUser)
+                .orElseThrow(() -> new IllegalStateException("Transação não Encontrada"));
+
+        if (isPaid) {
+            transaction.setStatus(TransactionStatus.PAID);
+            if (transaction.getPaymentDate() == null) {
+                transaction.setPaymentDate(LocalDate.now());
+            }
+        } else {
+                transaction.setStatus(TransactionStatus.PENDING);
+                transaction.setPaymentDate(null);
+        }
+        transactionRepository.save(transaction);
+
     }
 
 }
