@@ -1,6 +1,8 @@
 package com.essjr.DinMonex.transaction.dtos;
 
 
+import org.springframework.transaction.TransactionStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,10 +18,10 @@ public class TransactionResponseDTO {
     private BigDecimal value;
     private LocalDate dueDate;
     private boolean isRecurring;
-    private String type; // É bom enviar o tipo como String
+    private String type;
     private Integer totalInstallments;
+    private String status;
 
-    // Uma lista de DTOs de parcela.
     private List<InstallmentDTO> installments;
 
     public Long getId() {
@@ -64,10 +66,14 @@ public class TransactionResponseDTO {
     public void setTotalInstallments(Integer totalInstallments) {
         this.totalInstallments = totalInstallments;
     }
-    public List<InstallmentDTO> getInstallments() {
-        return installments;
+
+    public String getStatus() {
+        return status;
     }
-    public void setInstallments(List<InstallmentDTO> installments) {
-        this.installments = installments;
+
+    public void setStatus(String status) {
+        this.status = status;
     }
+
+
 }

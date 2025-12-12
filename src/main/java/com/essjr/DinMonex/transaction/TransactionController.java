@@ -76,14 +76,14 @@ public class TransactionController {
     // --- Endpoint para Cartão de Crédito ---
 
     @PostMapping("/credit-card")
-    public ResponseEntity<TransactionResponseDTO> createCreditCardTransaction(@RequestBody CreditCardTransactionRequestDTO dto) {
-        return ResponseEntity.ok(transactionService.createCreditCardTransaction(dto));
+    public ResponseEntity<List<TransactionResponseDTO>> createCreditCardTransaction(@RequestBody CreditCardTransactionRequestDTO dto) {
+        List<TransactionResponseDTO> transactions = transactionService.createCreditCardTransaction(dto);
+        return ResponseEntity.ok(transactions);
     }
 
     @GetMapping("/dashboard/resumo")
     public ResponseEntity<ResumeTransactionDTO> getResumo(@RequestParam(defaultValue = "0") int mes,
                                                            @RequestParam(defaultValue = "0") int ano){
-
 
         if (mes == 0 || ano == 0) {
             LocalDate hoje = LocalDate.now();
