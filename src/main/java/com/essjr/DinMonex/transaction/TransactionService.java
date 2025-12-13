@@ -236,6 +236,11 @@ public class TransactionService {
         }
         dto.setTotalInstallments(transaction.getTotalInstallments());
 
+        if(transaction.getGroup() != null){
+            dto.setGroupId(transaction.getGroup().getId());
+            dto.setGroupName(transaction.getGroup().getName());
+            dto.setGroupColor(transaction.getGroup().getHexColor());
+        }
         return dto;
     }
 
