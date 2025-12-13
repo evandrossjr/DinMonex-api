@@ -86,11 +86,12 @@ public class TransactionService {
         newTransaction.setRecurring(dto.isRecurring());
         newTransaction.setAppUser(currentUser);
         newTransaction.setType(TransactionType.CONSUMPTION);
-        if (dto.getStatus() == null){
-            newTransaction.setStatus(TransactionStatus.PENDING);
-        } else{
-            newTransaction.setStatus(dto.getStatus());
 
+        if (dto.getStatus() == TransactionStatus.PAID) {
+            newTransaction.setStatus(TransactionStatus.PAID);
+            newTransaction.setPaymentDate(LocalDate.now()); // <--- ADICIONE ISTO
+        } else {
+            newTransaction.setStatus(TransactionStatus.PENDING);
         }
 
         Transaction savedTransaction = transactionRepository.save(newTransaction);
@@ -159,6 +160,19 @@ public class TransactionService {
         transaction.setValue(dto.getValue());
         transaction.setDueDate(dto.getDueDate());
         transaction.setRecurring(dto.isRecurring());
+
+        if (dto.getStatus() != null) {
+            // Se mudou para PAGO e não tinha data, marca hoje
+            if (dto.getStatus() == TransactionStatus.PAID && transaction.getStatus() != TransactionStatus.PAID) {
+                transaction.setStatus(TransactionStatus.PAID);
+                transaction.setPaymentDate(LocalDate.now());
+            }
+            // Se mudou para PENDENTE, limpa a data
+            else if (dto.getStatus() == TransactionStatus.PENDING) {
+                transaction.setStatus(TransactionStatus.PENDING);
+                transaction.setPaymentDate(null);
+            }
+        }
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
         return convertToResponseDTO(updatedTransaction);
