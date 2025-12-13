@@ -61,7 +61,7 @@ public class Transaction {
     private LocalDate paymentDate;
 
     @ManyToOne
-    @JoinColumn(name = "goup_id")
+    @JoinColumn(name = "group_id")
     private TransactionGroup group;
 
 
