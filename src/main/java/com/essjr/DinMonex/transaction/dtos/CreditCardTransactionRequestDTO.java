@@ -17,6 +17,8 @@ public class CreditCardTransactionRequestDTO {
     private LocalDate dueDate;
     private Integer totalInstallments;
 
+    private Long groupId;
+
     public CreditCardTransactionRequestDTO() {
     }
 
@@ -50,5 +52,13 @@ public class CreditCardTransactionRequestDTO {
 
     public void setTotalInstallments(Integer totalInstallments) {
         this.totalInstallments = totalInstallments;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 }

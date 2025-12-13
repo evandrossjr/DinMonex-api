@@ -60,6 +60,10 @@ public class Transaction {
     @Column(name = "payment_date")
     private LocalDate paymentDate;
 
+    @ManyToOne
+    @JoinColumn(name = "goup_id")
+    private TransactionGroup group;
+
 
     public Transaction() {
     }
@@ -174,5 +178,13 @@ public class Transaction {
 
     public void setPaymentDate(LocalDate paymentDate) {
         this.paymentDate = paymentDate;
+    }
+
+    public TransactionGroup getGroup() {
+        return group;
+    }
+
+    public void setGroup(TransactionGroup group) {
+        this.group = group;
     }
 }
