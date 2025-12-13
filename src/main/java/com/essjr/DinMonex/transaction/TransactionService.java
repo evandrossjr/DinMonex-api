@@ -25,11 +25,13 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AuthenticationHelper authenticationHelper;
+    private final TransactionGroupRepository transactionGroupRepository;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, AuthenticationHelper authenticationHelper) {
+    public TransactionService(TransactionRepository transactionRepository, AuthenticationHelper authenticationHelper, TransactionGroupRepository transactionGroupRepository) {
         this.transactionRepository = transactionRepository;
         this.authenticationHelper = authenticationHelper;
+        this.transactionGroupRepository = transactionGroupRepository;
     }
 
     /**
@@ -94,6 +96,15 @@ public class TransactionService {
             newTransaction.setStatus(TransactionStatus.PENDING);
         }
 
+        if (dto.getGroupId() != null){
+            TransactionGroup group = transactionGroupRepository.findById(dto.getGroupId())
+                    .orElseThrow(() -> new RuntimeException("Grupo não Encontrado"));
+
+            newTransaction.setGroup(group);
+        } else {
+            newTransaction.setGroup(null);
+        }
+
         Transaction savedTransaction = transactionRepository.save(newTransaction);
         return convertToResponseDTO(savedTransaction);
     }
@@ -104,6 +115,11 @@ public class TransactionService {
         AppUser currentUser = authenticationHelper.getCurrentUser();
         List<Transaction> transactionToSave = new ArrayList<>();
 
+        TransactionGroup group = null;
+        if (dto.getGroupId() != null) {
+            group = transactionGroupRepository.findById(dto.getGroupId())
+                    .orElseThrow(() -> new RuntimeException("Grupo não Encontrado"));
+        }
         int totalParcelas = (dto.getTotalInstallments() != null && dto.getTotalInstallments() > 0)
                 ? dto.getTotalInstallments() : 1;
 
@@ -115,6 +131,7 @@ public class TransactionService {
             Transaction t = new Transaction();
 
             t.setAppUser(currentUser);
+            t.setGroup(group);
             t.setType(TransactionType.CREDIT_CARD);
             t.setRecurring(false);
             t.setStatus(TransactionStatus.PENDING);
@@ -131,11 +148,15 @@ public class TransactionService {
                 t.setValue(valorParcela);
             }
 
+
+
             String novaDescricao = String.format("%s (%d/%d)", dto.getDescription(), (i + 1), totalParcelas);
             t.setDescription(novaDescricao);
 
             transactionToSave.add(t);
         }
+
+
 
         List<Transaction> savedTransactions = transactionRepository.saveAll(transactionToSave);
 
@@ -160,6 +181,15 @@ public class TransactionService {
         transaction.setValue(dto.getValue());
         transaction.setDueDate(dto.getDueDate());
         transaction.setRecurring(dto.isRecurring());
+
+        if (dto.getGroupId() != null){
+            TransactionGroup group = transactionGroupRepository.findById(dto.getGroupId())
+                    .orElseThrow(() -> new RuntimeException("Grupo não Encontrado"));
+
+            transaction.setGroup(group);
+        } else {
+            transaction.setGroup(null);
+        }
 
         if (dto.getStatus() != null) {
             // Se mudou para PAGO e não tinha data, marca hoje

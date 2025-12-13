@@ -23,6 +23,7 @@ public class TransactionRequestDTO {
 
     private TransactionStatus status;
 
+    private Long groupId;
 
     // Getters e Setters
     public String getDescription() { return description; }
@@ -39,5 +40,13 @@ public class TransactionRequestDTO {
 
     public void setStatus(TransactionStatus status) {
         this.status = status;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 }

@@ -24,6 +24,10 @@ public class TransactionResponseDTO {
 
     private List<InstallmentDTO> installments;
 
+    private Long groupId;
+    private String groupName;
+    private String groupColor;
+
     public Long getId() {
         return id;
     }
@@ -75,5 +79,27 @@ public class TransactionResponseDTO {
         this.status = status;
     }
 
+    public Long getGroupId() {
+        return groupId;
+    }
 
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getGroupColor() {
+        return groupColor;
+    }
+
+    public void setGroupColor(String groupColor) {
+        this.groupColor = groupColor;
+    }
 }
