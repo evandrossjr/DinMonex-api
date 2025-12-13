@@ -98,7 +98,7 @@ public class SecurityConfig {
         // Permite que o nosso frontend (a correr em localhost:4200) faça pedidos.
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://dimonex.netlify.app"));
         // Permite os métodos HTTP mais comuns.
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         // Permite os cabeçalhos mais comuns, incluindo o 'Authorization' para o nosso token JWT.
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
