@@ -11,6 +11,8 @@ public interface TransactionGroupRepository extends JpaRepository<TransactionGro
 
     List<TransactionGroup> findAllByAppUser(AppUser appUser);
 
+    Optional<TransactionGroup> findByNameIgnoreCase(String name);
+
 
 
 }

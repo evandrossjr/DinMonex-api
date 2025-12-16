@@ -2,6 +2,7 @@ package com.essjr.DinMonex.transaction;
 
 
 import com.essjr.DinMonex.security.AuthenticationHelper;
+import com.essjr.DinMonex.strategy.AutoClassificationService;
 import com.essjr.DinMonex.transaction.dtos.*;
 import com.essjr.DinMonex.transaction.enuns.TransactionStatus;
 import com.essjr.DinMonex.transaction.enuns.TransactionType;
@@ -26,12 +27,14 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AuthenticationHelper authenticationHelper;
     private final TransactionGroupRepository transactionGroupRepository;
+    private final AutoClassificationService autoClassificationService;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, AuthenticationHelper authenticationHelper, TransactionGroupRepository transactionGroupRepository) {
+    public TransactionService(TransactionRepository transactionRepository, AuthenticationHelper authenticationHelper, TransactionGroupRepository transactionGroupRepository, AutoClassificationService autoClassificationService) {
         this.transactionRepository = transactionRepository;
         this.authenticationHelper = authenticationHelper;
         this.transactionGroupRepository = transactionGroupRepository;
+        this.autoClassificationService = autoClassificationService;
     }
 
     /**
@@ -95,15 +98,9 @@ public class TransactionService {
         } else {
             newTransaction.setStatus(TransactionStatus.PENDING);
         }
-
-        if (dto.getGroupId() != null){
-            TransactionGroup group = transactionGroupRepository.findById(dto.getGroupId())
-                    .orElseThrow(() -> new RuntimeException("Grupo não Encontrado"));
-
-            newTransaction.setGroup(group);
-        } else {
-            newTransaction.setGroup(null);
-        }
+        // Novo metodo para preencher o grupo utilizando o strategy
+        TransactionGroup group = autoClassificationService.classify(dto);
+        newTransaction.setGroup(group);
 
         Transaction savedTransaction = transactionRepository.save(newTransaction);
         return convertToResponseDTO(savedTransaction);
@@ -115,11 +112,9 @@ public class TransactionService {
         AppUser currentUser = authenticationHelper.getCurrentUser();
         List<Transaction> transactionToSave = new ArrayList<>();
 
-        TransactionGroup group = null;
-        if (dto.getGroupId() != null) {
-            group = transactionGroupRepository.findById(dto.getGroupId())
-                    .orElseThrow(() -> new RuntimeException("Grupo não Encontrado"));
-        }
+        // Novo metodo para preencher o grupo utilizando o strategy
+        TransactionGroup group = autoClassificationService.classify(dto);
+
         int totalParcelas = (dto.getTotalInstallments() != null && dto.getTotalInstallments() > 0)
                 ? dto.getTotalInstallments() : 1;
 
@@ -137,6 +132,8 @@ public class TransactionService {
             t.setStatus(TransactionStatus.PENDING);
             t.setTotalInstallments(totalParcelas);
             t.setCurrentInstallment(i + 1);
+
+
             if (i == 0){
                 t.setDueDate(dto.getDueDate());
             } else {
