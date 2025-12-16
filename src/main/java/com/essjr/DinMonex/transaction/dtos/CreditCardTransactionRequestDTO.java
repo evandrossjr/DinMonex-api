@@ -10,41 +10,14 @@ import java.time.LocalDate;
  * DTO para receber os dados de uma nova transação de cartão de crédito do frontend.
  * Contém os campos básicos de uma transação mais o número total de parcelas.
  */
-public class CreditCardTransactionRequestDTO {
+public class CreditCardTransactionRequestDTO extends TransactionRequestDTO {
 
-    private String description;
-    private BigDecimal value;
-    private LocalDate dueDate;
+
     private Integer totalInstallments;
-
-    private Long groupId;
 
     public CreditCardTransactionRequestDTO() {
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getValue() {
-        return value;
-    }
-
-    public void setValue(BigDecimal value) {
-        this.value = value;
-    }
-
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
 
     public Integer getTotalInstallments() {
         return totalInstallments;
@@ -54,11 +27,5 @@ public class CreditCardTransactionRequestDTO {
         this.totalInstallments = totalInstallments;
     }
 
-    public Long getGroupId() {
-        return groupId;
-    }
 
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
-    }
 }
