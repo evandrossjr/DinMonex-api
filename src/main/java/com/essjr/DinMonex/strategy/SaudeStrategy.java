@@ -1,7 +1,9 @@
 package com.essjr.DinMonex.strategy;
 
 import com.essjr.DinMonex.transaction.dtos.TransactionRequestDTO;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SaudeStrategy implements ClassificacaoStrategy{
 
 
