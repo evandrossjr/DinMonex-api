@@ -1,5 +1,6 @@
 package com.essjr.DinMonex.transaction;
 
+import com.essjr.DinMonex.IA.OllamaService;
 import com.essjr.DinMonex.transaction.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +14,12 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final OllamaService ollamaService;
 
     @Autowired
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, OllamaService ollamaService) {
         this.transactionService = transactionService;
+        this.ollamaService = ollamaService;
     }
 
     /**
@@ -102,5 +105,9 @@ public class TransactionController {
     }
 
 
+    @GetMapping("/teste-ia")
+    public String testarIA(@RequestParam String descricao){
+        return ollamaService.classificar(descricao);
+    }
 }
 

@@ -1,5 +1,6 @@
 package com.essjr.DinMonex.strategy;
 
+import com.essjr.DinMonex.IA.OllamaService;
 import com.essjr.DinMonex.transaction.TransactionGroup;
 import com.essjr.DinMonex.transaction.TransactionGroupRepository;
 import com.essjr.DinMonex.transaction.dtos.TransactionRequestDTO;
@@ -13,10 +14,12 @@ public class AutoClassificationService {
 
     private final List<ClassificacaoStrategy> strategies;
     private final TransactionGroupRepository transactionGroupRepository;
+    private final OllamaService ollamaService;
 
-    public AutoClassificationService(List<ClassificacaoStrategy> strategies, TransactionGroupRepository transactionGroupRepository) {
+    public AutoClassificationService(List<ClassificacaoStrategy> strategies, TransactionGroupRepository transactionGroupRepository, OllamaService ollamaService) {
         this.strategies = strategies;
         this.transactionGroupRepository = transactionGroupRepository;
+        this.ollamaService = ollamaService;
     }
 
     public TransactionGroup classify(TransactionRequestDTO dto){
@@ -35,6 +38,14 @@ public class AutoClassificationService {
                 }
             }
         }
-        return null;
+        String categoriaIA = ollamaService.classificar(dto.getDescription());
+
+        return transactionGroupRepository
+                .findByNameIgnoreCase(categoriaIA)
+                .orElse(
+                        transactionGroupRepository
+                                .findByNameIgnoreCase("Outros")
+                                .orElse(null)
+                );
     }
 }

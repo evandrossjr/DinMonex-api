@@ -9,3 +9,6 @@
 # Sistema
 *.log
 *.tmp
+
+
+**/application-test.properties
